@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Chess board, that holds Queens.
@@ -41,8 +43,8 @@ public class Board {
      * @param size
      * @return 
      */
-    public static Iterator<Board> permutations(int size) {
-        return new Iterator<Board>() {
+    public static Stream<Board> permutations(int size) {
+        return StreamSupport.stream(((Iterable<Board>)(() -> new Iterator<Board>() {
             @Override
             public boolean hasNext() {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -52,6 +54,6 @@ public class Board {
             public Board next() {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
-        };
+        })).spliterator(), false);
     }
 }

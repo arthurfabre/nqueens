@@ -30,7 +30,6 @@ public class Main {
         Params params = new Params();
         JCommander.newBuilder().addObject(params).build().parse(args);
 
-        NQueens nqueens = new NQueens();
-        nqueens.solve(new Board(params.getSize()));
+        Board.permutations(params.getSize()).filter(Board::valid);
     }
 }
