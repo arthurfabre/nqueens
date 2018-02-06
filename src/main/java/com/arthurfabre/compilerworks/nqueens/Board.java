@@ -1,11 +1,11 @@
 package com.arthurfabre.compilerworks.nqueens;
 
-import java.util.HashSet;
-import java.util.Iterator;
+import com.google.common.collect.Collections2;
 import java.util.List;
-import java.util.Set;
+import java.util.function.IntUnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Chess board, that holds Queens.
@@ -13,7 +13,9 @@ import java.util.stream.StreamSupport;
 public class Board {
 
     /**
-     * 
+     * List of row number of Queen for every column.
+     * Ensures one Queen per column.
+     * An ordered set would ensure one Queen per row, but the interface is a bit nasty.
      */
     private final List<Integer> positions;
 
@@ -21,39 +23,47 @@ public class Board {
         this.positions = positions;
     }
 
+    /**
+     * Check if the layout of a board is valid
+     * @return 
+     */
     public boolean valid() {
-        // Intersection of diagonals and x axis
-        Set<Integer> seenDiagonals = new HashSet<>();
+        // Instersaction of diagonals and x axis (which is mirrored for the 2nd set)
+        return checkDiag(x -> x - positions.get(x)) && checkDiag(x -> (positions.size() - x) - positions.get(x));
+    }
 
-        for (int x = 0; x < positions.size(); x++) {
-            int diagonal = x - positions.get(x);
+    /**
+     * Check the diagonal of every Queen is unique.
+     * @param diag Lambda that computes the diagonal from the index.
+     * @return True if every Queen has a unique diagonal, false otherwise.
+     */
+    private boolean checkDiag(IntUnaryOperator diag) {
+        return IntStream.range(0, positions.size()).map(diag).distinct().count() == positions.size();
+    }
 
-            if (seenDiagonals.contains(diagonal)) {
-                return false;
+    /**
+     * ASCII board representation.
+     * @return 
+     */
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        for (int r = 0; r < positions.size(); r++) {
+            for (int c = 0; c < positions.size(); c++) {
+                str.append(positions.get(c).equals(r) ? "x" : ".").append(" ");
             }
-
-            seenDiagonals.add(diagonal);
+            str.append(System.lineSeparator());
         }
-
-        return true;
+        return str.toString();
     }
 
     /**
      * Lazy generated stream of board permutations 
-     * @param size
-     * @return 
+     * @param size Size of board in rows / cols
+     * @return Possible permutations with a unique queen per row & column.
      */
     public static Stream<Board> permutations(int size) {
-        return StreamSupport.stream(((Iterable<Board>)(() -> new Iterator<Board>() {
-            @Override
-            public boolean hasNext() {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public Board next() {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        })).spliterator(), false);
+        // The collection returned from Guava is actually lazy generated
+        return Collections2.permutations(IntStream.range(0, size).boxed().collect(Collectors.toList())).stream().map(p -> new Board(p));
     }
 }
